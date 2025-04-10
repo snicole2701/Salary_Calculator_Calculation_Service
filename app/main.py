@@ -3,6 +3,7 @@ import os
 import requests
 from . import create_app
 from .db import check_tax_service_health, fetch_user_input, fetch_tax_details, fetch_rebate_value
+from app import create_app
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

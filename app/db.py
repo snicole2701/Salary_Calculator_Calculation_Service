@@ -31,8 +31,14 @@ def check_tax_service_health():
 def fetch_user_input():
     """
     Fetch user input from the User Input Service.
+
     Returns:
-        dict: A dictionary containing user input values, or None if an error occurs.
+        dict: A dictionary containing the following validated user input values:
+            - total_income (float): Total income calculated.
+            - total_income_excluding_commission (float): Income excluding commission.
+            - projected_annual_income (float): Annual income projected (excluding bonus and leave pay).
+            - projected_annual_income_plus_bonus_leave (float): Annual income plus bonus and leave pay.
+        Returns None if an error occurs or data is incomplete.
     """
     url = f"{USER_INPUT_SERVICE_URL}/validate"
     logger.info("Fetching user input from User Input Service...")
@@ -40,7 +46,7 @@ def fetch_user_input():
         response = requests.post(url, json={})
         if response.status_code == 200:
             logger.info("User input successfully fetched.")
-            data = response.json().get("data")
+            data = response.json().get("data", {})
             # Ensure all required fields are present
             required_fields = [
                 "total_income",
@@ -48,13 +54,13 @@ def fetch_user_input():
                 "projected_annual_income",
                 "projected_annual_income_plus_bonus_leave"
             ]
-            if all(field in data for field in required_fields):
-                return data
-            else:
-                logger.error("Incomplete data from User Input Service.")
+            missing_fields = [field for field in required_fields if field not in data]
+            if missing_fields:
+                logger.error(f"Incomplete data from User Input Service. Missing fields: {missing_fields}")
                 return None
+            return data
         else:
-            logger.error(f"Error fetching user input: {response.status_code}")
+            logger.error(f"Error fetching user input: {response.status_code} - {response.text}")
             return None
     except requests.RequestException as e:
         logger.error(f"Request to User Input Service failed: {e}")

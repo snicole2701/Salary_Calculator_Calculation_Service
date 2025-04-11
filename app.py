@@ -126,4 +126,4 @@ def health():
 
 if __name__ == "__main__":
     logging.info("Starting Flask app for Microservice 3")
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5002)))

@@ -27,15 +27,17 @@ def fetch_user_input():
     """
     Fetch user input data from Microservice 1.
     Returns:
-        dict: User input data.
+        dict: User input data or error.
     """
     url = f"{USER_INPUT_SERVICE_BASE_URL}/get-user-input"
     try:
         response = requests.get(url)
-        if response.status_code == 200:
+
+        # Check if the response is valid
+        if response.status_code == 200 and response.content:  # Ensure content is not empty
             user_input = response.json()
 
-            # Validate required fields (month, year, age)
+            # Validate required fields
             if not all(key in user_input for key in ["month", "year", "age"]):
                 logging.error("User input is missing required fields: month, year, or age.")
                 return {"error": "User input is incomplete."}
@@ -46,8 +48,11 @@ def fetch_user_input():
             logging.warning("No user input available. Returning error.")
             return {"error": "User input is unavailable."}
         else:
-            logging.error(f"Error fetching user input: {response.status_code} - {response.json().get('error', 'Unknown error')}")
-            return {"error": response.json().get("error", "Unknown error")}
+            logging.error(f"Error fetching user input: {response.status_code} - {response.text}")
+            return {"error": f"Failed with status code {response.status_code}"}
+    except ValueError as e:  # JSON decoding error
+        logging.error(f"Failed to decode JSON response: {e}")
+        return {"error": "Invalid JSON response from User Input Service"}
     except requests.RequestException as e:
         logging.error(f"Failed to connect to User Input Service: {e}")
         return {"error": "Connection to User Input Service failed"}
@@ -74,6 +79,11 @@ def send_to_tax_table_service(data):
     except requests.RequestException as e:
         logging.error(f"Failed to connect to Tax Table Service: {e}")
         return {"error": "Connection to Tax Table Service failed"}
+
+@app.route("/", methods=["GET"])
+def home():
+    """Default route."""
+    return jsonify({"message": "Microservice 3 is running successfully!"}), 200
 
 @app.route("/perform-calculations", methods=["POST"])
 def perform_calculations_route():

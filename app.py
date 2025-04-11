@@ -68,6 +68,7 @@ def send_to_tax_table_service(data):
     """
     url = f"{TAX_TABLE_SERVICE_BASE_URL}/get-tax-details"
     try:
+        logging.info(f"Sending payload to Tax Table Service: {data}")
         response = requests.post(url, json=data)
         if response.status_code == 200:
             tax_and_rebate_data = response.json()
@@ -100,10 +101,10 @@ def perform_calculations_route():
 
     # Combine user input fields with intermediate calculations
     combined_data = {
-        **intermediate_data,
+        **intermediate_data,  # Includes age_group
         "month": user_input["month"],
         "year": user_input["year"],
-        "age": user_input["age"],  # Add raw age for Microservice 2 to process
+        "age": user_input["age"]
     }
 
     # Send combined data to Microservice 2
